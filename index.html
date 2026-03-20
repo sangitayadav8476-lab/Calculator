@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Scientific Calculator</title>
+<style>
+body {
+  margin: 0;
+  background: #0b0f1a;
+  font-family: Consolas;
+}.calculator { width: 100vw; height: 100vh; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+
+#display { height: 80px; font-size: 28px; padding: 15px; background: #0a192f; color: white; border: none; border-radius: 10px; text-align: right; }
+
+#history { height: 60px; overflow-y: auto; font-size: 14px; color: #00eaff; margin: 5px 0; }
+
+.buttons { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+button { padding: 14px; font-size: 16px; border: none; border-radius: 10px; background: #00eaff; }
+
+.operator { background: orange; } .equal { background: #2ecc71; grid-column: span 2; } .clear { background: red; color: white; } .memory { background: purple; color: white; } .voice { background: #f1c40f; } </style>
+
+</head>
+<body><div class="calculator">
+  <input id="display" disabled>
+  <div id="history"></div>  <div class="buttons" style="overflow-y:auto;">
+    <button onclick="clearDisplay()" class="clear">C</button>
+    <button onclick="append('(')">(</button>
+    <button onclick="append(')')">)</button>
+    <button onclick="append('%')">%</button>
+    <button onclick="backspace()">⌫</button><button onclick="append('7')">7</button>
+<button onclick="append('8')">8</button>
+<button onclick="append('9')">9</button>
+<button onclick="append('/')" class="operator">÷</button>
+<button onclick="sqrt()">√</button>
+
+<button onclick="append('4')">4</button>
+<button onclick="append('5')">5</button>
+<button onclick="append('6')">6</button>
+<button onclick="append('*')" class="operator">×</button>
+<button onclick="power()">x²</button>
+
+<button onclick="append('1')">1</button>
+<button onclick="append('2')">2</button>
+<button onclick="append('3')">3</button>
+<button onclick="append('-')" class="operator">−</button>
+<button onclick="sin()">sin</button>
+
+<button onclick="append('0')">0</button>
+<button onclick="append('.')">.</button>
+<button onclick="log()">log</button>
+<button onclick="append('+')" class="operator">+</button>
+<button onclick="cos()">cos</button>
+
+<button onclick="tan()">tan</button>
+<button onclick="factorial()">n!</button>
+<button onclick="pi()">π</button>
+<button onclick="e()">e</button>
+<button onclick="calculate()" class="equal">=</button>
+
+<button onclick="memoryAdd()" class="memory">M+</button>
+<button onclick="memorySubtract()" class="memory">M-</button>
+<button onclick="memoryRecall()" class="memory">MR</button>
+<button onclick="memoryClear()" class="memory">MC</button>
+<button onclick="startVoice()" class="voice">🎤</button>
+
+  </div>
+</div><script>
+let display = document.getElementById("display");
+let historyDiv = document.getElementById("history");
+let memory = 0;
+
+function append(v){ display.value += v; }
+function clearDisplay(){ display.value = ""; }
+function backspace(){ display.value = display.value.slice(0,-1); }
+
+function calculate(){
+  try{
+    let result = eval(display.value);
+    historyDiv.innerHTML += display.value + " = " + result + "<br>";
+    display.value = result;
+  }catch{ display.value = "Error"; }
+}
+
+function sqrt(){ display.value = Math.sqrt(eval(display.value)); }
+function power(){ display.value = Math.pow(eval(display.value),2); }
+function sin(){ display.value = Math.sin(eval(display.value)*Math.PI/180); }
+function cos(){ display.value = Math.cos(eval(display.value)*Math.PI/180); }
+function tan(){ display.value = Math.tan(eval(display.value)*Math.PI/180); }
+function log(){ display.value = Math.log10(eval(display.value)); }
+
+function factorial(){
+ let n = eval(display.value);
+ if(n<0) return display.value="Error";
+ let r=1; for(let i=2;i<=n;i++) r*=i;
+ display.value=r;
+}
+
+function pi(){ display.value += Math.PI; }
+function e(){ display.value += Math.E; }
+
+function memoryAdd(){ memory += Number(display.value)||0; }
+function memorySubtract(){ memory -= Number(display.value)||0; }
+function memoryRecall(){ display.value = memory; }
+function memoryClear(){ memory = 0; }
+
+// VOICE INPUT
+function startVoice(){
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.start();
+  recognition.onresult = function(e){
+    let text = e.results[0][0].transcript;
+    display.value = text.replace(/plus/g,'+').replace(/minus/g,'-').replace(/into/g,'*').replace(/divide/g,'/');
+  }
+}
+</script></body>
+</html>
