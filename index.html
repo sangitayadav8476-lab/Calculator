@@ -104,7 +104,7 @@ function memorySubtract(){ memory -= Number(display.value)||0; }
 function memoryRecall(){ display.value = memory; }
 function memoryClear(){ memory = 0; }
 
-// VOICE INPUT (SMART)
+// VOICE INPUT (SMART FIXED)
 function startVoice(){
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.start();
@@ -112,48 +112,70 @@ function startVoice(){
   recognition.onresult = function(e){
     let text = e.results[0][0].transcript.toLowerCase();
 
-    // convert words → symbols
-    let expr = text
+    // detect equals first
+    let hasEquals = text.includes("equal") || text.includes("equals");
+
+    // clean text (remove equals words BEFORE conversion)
+    let cleanText = text.replace(/equals?/g, '').trim();
+
+    // convert words → symbols safely
+    let expr = cleanText
       .replace(/plus/g,'+')
       .replace(/minus/g,'-')
       .replace(/into|multiply/g,'*')
       .replace(/divide|by/g,'/')
-      .replace(/percent/g,'%')
-      .replace(/pi/g, Math.PI)
-      .replace(/e/g, Math.E);
+      .replace(/percent/g,'%');
 
-    // handle trig
+    // TRIG FUNCTIONS
     if(expr.includes("sin")){
       let num = parseFloat(expr.replace(/[^0-9.]/g,''));
-      display.value = Math.sin(num * Math.PI/180);
+      let result = Math.sin(num * Math.PI/180);
+      display.value = hasEquals ? result : "sin " + num;
       return;
     }
     if(expr.includes("cos")){
       let num = parseFloat(expr.replace(/[^0-9.]/g,''));
-      display.value = Math.cos(num * Math.PI/180);
+      let result = Math.cos(num * Math.PI/180);
+      display.value = hasEquals ? result : "cos " + num;
       return;
     }
     if(expr.includes("tan")){
       let num = parseFloat(expr.replace(/[^0-9.]/g,''));
-      display.value = Math.tan(num * Math.PI/180);
+      let result = Math.tan(num * Math.PI/180);
+      display.value = hasEquals ? result : "tan " + num;
       return;
     }
 
-    // if user says equals → calculate
-    if(text.includes("equal") || text.includes("equals")){
+    if(hasEquals){
       try{
-        // remove 'equals' completely before evaluating
-        let cleanExpr = expr.replace(/equals?/g,'').trim();
-        let result = eval(cleanExpr);
-        historyDiv.innerHTML += cleanExpr + " = " + result + "<br>";
-        display.value = result; // only result, no equals sign
+        let result = eval(expr);
+        historyDiv.innerHTML += expr + " = " + result + "<br>";
+        display.value = result; // ONLY answer
       }catch{
         display.value = "Error";
       }
     } else {
-      // only show expression (no calculation)
-      display.value = expr;
+      display.value = expr; // ONLY expression
     }
+  }
+}
+
+// VOICE REPLY (JARVIS SPEAK)
+function speak(text){
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'en-US';
+  window.speechSynthesis.speak(speech);
+}
+
+// Modify calculate to speak
+function calculate(){
+  try{
+    let result = eval(display.value);
+    historyDiv.innerHTML += display.value + " = " + result + "<br>";
+    display.value = result;
+    speak(result); // 🔊 speaks answer
+  }catch{
+    display.value = "Error";
   }
 }
 </script></body>
